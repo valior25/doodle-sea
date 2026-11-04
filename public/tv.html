@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#073a6d">
+<title>ים של ציורים</title>
+<link rel="stylesheet" href="/ui.css">
+<style>
+  html,body{margin:0;height:100%;background:#052a4d;overflow:hidden;font-family:Rubik,system-ui,sans-serif;color:#fff;-webkit-user-select:none;user-select:none}
+  #tank{position:fixed;inset:0;display:block;touch-action:manipulation}
+  body.idle{cursor:none}
+  .ic{display:block}
+
+  /* ── first-run welcome card (shown while the tank has no real fish of its own) ── */
+  #hero{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;transition:opacity .9s ease,transform .9s ease,visibility 0s}
+  #hero.gone{opacity:0;transform:scale(.96);visibility:hidden;transition:opacity .9s ease,transform .9s ease,visibility 0s .9s}
+  #hero.gone .card{pointer-events:none}
+  .card{pointer-events:auto;display:flex;gap:min(4vw,56px);align-items:center;padding:min(3.2vw,46px) min(4vw,58px);border-radius:32px;
+    background:linear-gradient(160deg,rgba(255,255,255,.2),rgba(255,255,255,.07));border:1px solid rgba(255,255,255,.3);
+    box-shadow:0 30px 80px rgba(2,22,52,.5),inset 0 1px 0 rgba(255,255,255,.4);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);max-width:min(1180px,92vw)}
+  .card h1{margin:0 0 .15em;font-size:clamp(32px,4.4vw,72px);line-height:1.05;font-weight:700;letter-spacing:-.01em;text-shadow:0 4px 24px rgba(2,22,52,.45)}
+  .card h1 span{color:#ffe27a;text-shadow:0 3px 18px rgba(2,22,52,.6)}
+  .card p.sub{margin:0 0 1.1em;font-size:clamp(16px,1.7vw,28px);opacity:.92;font-weight:400}
+  .steps{display:flex;gap:min(1.4vw,20px);flex-wrap:wrap}
+  .step{flex:1 1 0;min-width:130px;background:rgba(3,30,66,.4);border-radius:22px;padding:14px 14px 16px;text-align:center;border:1px solid rgba(255,255,255,.16)}
+  .step .n{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#ffc94a;color:#4a2300;font-weight:700;font-size:15px;margin-bottom:6px}
+  .step .i{display:grid;place-items:center;height:44px;color:#ffe27a}
+  .step span{display:block;font-size:clamp(14px,1.45vw,24px);font-weight:500;margin-top:4px}
+  .qrbox{flex:none;text-align:center}
+  .qr{background:#fff;border-radius:22px;padding:12px;width:min(17vw,250px);aspect-ratio:1;box-shadow:0 10px 30px rgba(2,22,52,.45);animation:breathe 4s ease-in-out infinite}
+  @keyframes breathe{50%{transform:scale(1.025)}}
+  .qr svg{width:100%;height:100%;display:block}
+  .qrbox small{display:block;margin-top:10px;font-size:clamp(12px,1.15vw,19px);opacity:.9;direction:ltr;unicode-bidi:plaintext}
+  .qrbox strong{display:block;margin-top:10px;font-size:clamp(15px,1.5vw,25px);font-weight:500}
+
+  /* ── small corner chip after the first fish ── */
+  #badge{position:fixed;left:18px;bottom:18px;display:flex;gap:12px;align-items:center;padding:10px 16px 10px 14px;border-radius:22px;background:rgba(6,40,82,.6);
+    border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 12px 30px rgba(2,22,52,.35);
+    opacity:0;transform:translateY(12px);transition:.5s;pointer-events:none}
+  #badge.show{opacity:1;transform:none;pointer-events:auto}
+  #badgeX{position:absolute;top:-10px;right:-10px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:rgba(6,40,82,.85);color:#fff;display:grid;place-items:center;cursor:pointer;padding:0}
+  #badgeX:hover,#badgeX:focus-visible{background:#1488c8;outline:none}
+  #qrTab{position:fixed;left:18px;bottom:18px;display:none;align-items:center;gap:6px;padding:8px 14px;border-radius:18px;border:1px solid rgba(255,255,255,.25);background:rgba(6,40,82,.55);color:#fff;font:600 14px/1 inherit;cursor:pointer;backdrop-filter:blur(8px);opacity:.75}
+  #qrTab:hover,#qrTab:focus-visible{opacity:1;outline:none}
+  #qrTab.show{display:flex}
+  #badge .qr{width:min(8.5vw,112px);padding:6px;border-radius:12px;animation:none}
+  #badge .t{font-size:clamp(13px,1.3vw,20px);line-height:1.35}
+  #badge .t b{display:block;font-size:1.1em;font-weight:700}
+
+  /* ── toasts ── */
+  #toast{position:fixed;top:5vh;left:50%;transform:translate(-50%,-30px);opacity:0;padding:.5em 1.4em;border-radius:99px;font-weight:700;font-size:clamp(20px,2.6vw,44px);
+    background:linear-gradient(90deg,rgba(255,226,122,.97),rgba(255,157,92,.97));color:#4a2300;box-shadow:0 12px 40px rgba(2,22,52,.45);
+    transition:.6s cubic-bezier(.2,1.4,.4,1);white-space:nowrap;pointer-events:none;z-index:20}
+  #toast.show{opacity:1;transform:translate(-50%,0)}
+  #undo{position:fixed;left:50%;bottom:28px;transform:translate(-50%,30px);opacity:0;pointer-events:none;z-index:60;display:flex;gap:14px;align-items:center;padding:.6em .8em .6em 1.2em;
+    border-radius:99px;background:rgba(6,40,82,.92);border:1px solid rgba(255,255,255,.25);box-shadow:0 14px 40px rgba(2,22,52,.5);font-weight:500;font-size:clamp(15px,1.5vw,22px);transition:.35s cubic-bezier(.2,.9,.25,1)}
+  #undo.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+  #undo button{border:0;border-radius:99px;padding:.5em 1.1em;font:inherit;font-weight:700;background:#ffc94a;color:#4a2300;cursor:pointer}
+  #fps{position:fixed;right:8px;bottom:8px;font:12px monospace;opacity:.7;display:none;direction:ltr}
+  @media (max-aspect-ratio:1/1){.card{flex-direction:column;text-align:center;padding:26px}.qr{width:min(46vw,260px)}}
+  @media (prefers-reduced-motion:reduce){.qr{animation:none}}
+</style>
+<link rel="stylesheet" href="/menu.css">
+</head>
+<body>
+<canvas id="tank"></canvas>
+
+<div id="hero"><div class="card">
+  <div class="qrbox"><div class="qr" id="qrBig"></div><strong>סרקו עם מצלמת הטלפון</strong><small id="urlBig"></small></div>
+  <div>
+    <h1>בואו נמלא את <span>האקווריום</span></h1>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><div class="i" data-ic="crayon" data-sz="38"></div><span>מדפיסים דף וצובעים חיית ים</span></div>
+      <div class="step"><div class="n">2</div><div class="i" data-ic="camera" data-sz="38"></div><span>מצלמים עם הטלפון</span></div>
+      <div class="step"><div class="n">3</div><div class="i" data-ic="fish" data-sz="38"></div><span>והיא תשחה פה על המסך!</span></div>
+    </div>
+  </div>
+</div></div>
+
+<button id="qrTab" type="button" aria-label="הצגת קוד הסריקה"></button>
+<div id="badge"><button id="badgeX" type="button" aria-label="הסתרת קוד הסריקה"></button><div class="qr" id="qrSmall"></div><div class="t"><b>רוצים להוסיף חיה?</b><span id="urlSmall" style="direction:ltr;unicode-bidi:plaintext"></span></div></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="undo" role="status"><span id="undoMsg"></span><button id="undoBtn">ביטול</button></div>
+<div id="fps"></div>
+
+<script src="/vendor/qrcode.js"></script>
+<script src="/creatures.js"></script>
+<script src="/icons.js"></script>
+<script src="/reef.js"></script>
+<script>[].forEach.call(document.querySelectorAll('[data-ic]'), function (el) { el.innerHTML = Icons.svg(el.dataset.ic, +el.dataset.sz || 24); });</script>
+<script src="/tv.js"></script>
+<script src="/capture.js"></script>
+<script src="/sound.js"></script>
+<script src="/music.js"></script>
+<script src="/menu.js"></script>
+</body>
+</html>

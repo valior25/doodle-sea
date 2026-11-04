@@ -1,0 +1,10 @@
+{
+  "name": "doodle-sea",
+  "version": "1.0.0",
+  "description": "ים של ציורים - color a sea creature, scan it, watch it swim on the TV",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "license": "MIT",
+  "author": "Doodle Sea authors"
+}

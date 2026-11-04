@@ -1,0 +1,31 @@
+const { chromium } = require('playwright');
+(async () => {
+  const b = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
+  const p = await b.newPage({ viewport: { width: 1600, height: 900 } });
+  const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => m.type() === 'error' && errs.push(m.text()));
+  await p.goto('http://localhost:8205/tv'); await p.waitForTimeout(2500);
+  await p.screenshot({ path: '/tmp/m_hero.png' });
+  // hero must not block taps
+  const blocked = await p.evaluate(() => { const e = document.elementFromPoint(800, 450); return e && e.tagName; });
+  await p.mouse.move(700, 400); await p.click('#menuBtn'); await p.waitForTimeout(700);
+  await p.screenshot({ path: '/tmp/m_fish_empty.png' });
+  await p.click('.tab[data-t=add]'); await p.setInputFiles('#mFile', '/tmp/photo_0.jpg'); await p.waitForSelector('#mPreview', { state: 'visible', timeout: 25000 });
+  await p.screenshot({ path: '/tmp/m_add.png' });
+  await p.click('#mSend'); await p.waitForTimeout(2500);
+  await p.mouse.move(700, 400); await p.click('#menuBtn'); await p.waitForTimeout(800);
+  await p.screenshot({ path: '/tmp/m_gallery.png' });
+  await p.click('#mGallery .g'); await p.waitForTimeout(500);
+  await p.screenshot({ path: '/tmp/m_sheet.png' });
+  await p.fill('#shName', 'נמו'); await p.click('#shClose'); await p.waitForTimeout(500);
+  await p.click('#mGallery .g'); const box = await p.locator('#shDel').boundingBox();
+  await p.mouse.move(box.x + 20, box.y + 10); await p.mouse.down(); await p.waitForTimeout(1100); await p.mouse.up();
+  await p.waitForTimeout(400); await p.screenshot({ path: '/tmp/m_undo.png' });
+  const cnt1 = await p.evaluate(() => document.querySelectorAll('#mGallery .g').length);
+  await p.click('#undoBtn'); await p.waitForTimeout(300);
+  const cnt2 = await p.evaluate(() => document.querySelectorAll('#mGallery .g').length);
+  await p.click('.tab[data-t=set]'); await p.waitForTimeout(300); await p.screenshot({ path: '/tmp/m_set.png' });
+  await p.click('#mSndOn'); await p.waitForTimeout(500);
+  const s = await p.evaluate(() => ReefSound.status());
+  console.log({ blocked, cnt1, cnt2, s, errs });
+  await b.close();
+})();

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>בדיקת מערכת · ים של ציורים</title><link rel="stylesheet" href="/ui.css">
+<style>body{padding:16px;max-width:560px;margin:auto}h1{font-size:1.5rem}.r{display:flex;gap:10px;align-items:flex-start;background:#fff;border-radius:14px;padding:10px 12px;margin:8px 0;box-shadow:0 2px 8px rgba(7,58,109,.1)}
+.r b{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#fff;background:#9ab}.r.ok b{background:#1fa463}.r.bad b{background:#d8402a}.r.warn b{background:#e09b12}.r small{display:block;color:#567;direction:ltr;unicode-bidi:plaintext}
+#sum{font-weight:700;margin:12px 0}pre{white-space:pre-wrap;background:#eef6fb;border-radius:12px;padding:10px;font-size:.8rem;direction:ltr}</style></head>
+<body><h1>בדיקת מערכת</h1><p>בודק שהשרת, הדפדפן, המצלמה, הצליל והסריקה עובדים על המכשיר הזה.</p>
+<button class="btn blue" id="go" style="width:100%">הרצת הבדיקה</button><div id="sum"></div><div id="out"></div><pre id="raw"></pre>
+<script src="/creatures.js"></script><script src="/capture.js"></script><script src="/reef.js"></script>
+<script>
+(function(){
+var out=document.getElementById('out'),sum=document.getElementById('sum'),res=[];
+function row(st,t,d){var e=document.createElement('div');e.className='r '+st;e.innerHTML='<b>'+(st==='ok'?'✓':st==='bad'?'✕':'!')+'</b><div>'+t+(d?'<small>'+String(d).replace(/</g,'&lt;')+'</small>':'')+'</div>';out.appendChild(e);res.push(st+' '+t+' '+(d||''));}
+async function T(name,fn){try{var r=await fn();if(r&&r.warn)row('warn',name,r.warn);else row('ok',name,r&&r.info);}catch(e){row('bad',name,e&&e.message||e);}}
+function api(m,p,b){return Reef.api(m,p,b);}
+document.getElementById('go').onclick=async function(){
+ out.innerHTML='';res=[];sum.textContent='בודק...';
+ await T('הדפדפן מוכן (הקשר מאובטח / localhost)',async function(){if(!window.isSecureContext)return{warn:'הדף לא מאובטח: המצלמה הישירה לא תעבוד. אפשר לצלם דרך כפתור הצילום או לפתוח דרך localhost'};return{info:location.origin};});
+ await T('שרת עונה',async function(){var j=await (await fetch('/api/info')).json();return{info:'דגים: '+j.count+' / '+j.max+' · '+(j.urls||[]).join(' ')};});
+ await T('שרת: העלאה, שינוי שם ומחיקה',async function(){
+   var c=document.createElement('canvas');c.width=c.height=64;var g=c.getContext('2d');g.fillStyle='#f80';g.beginPath();g.arc(32,32,24,0,7);g.fill();
+   var rec=await api('POST','/api/fish',{kind:'clown',png:c.toDataURL('image/png'),cid:Reef.cid()});
+   var l=await (await fetch('/api/fish')).json();if(!l.some(function(f){return f.id===rec.id}))throw new Error('הדג לא נמצא ברשימה');
+   var pic=await fetch('/fish/'+rec.id+'.png');if(!pic.ok)throw new Error('התמונה לא נשלפת');
+   await api('PATCH','/api/fish/'+rec.id,{name:'בדיקה'});await api('DELETE','/api/fish/'+rec.id);return{info:'עבר'};});
+ await T('עדכונים חיים (SSE)',function(){return new Promise(function(ok,no){var es=new EventSource('/api/events'),t=setTimeout(function(){es.close();no(new Error('לא התקבל אירוע'))},4000);es.addEventListener('feed',function(){clearTimeout(t);es.close();ok({info:'התקבל'})});es.onopen=function(){api('POST','/api/feed',{}).catch(no)};});});
+ await T('סריקה: זיהוי דף צבוע (תמונת בדיקה)',async function(){
+   var bl=await (await fetch('/test/shark-photo.jpg')).blob();var bm=await createImageBitmap(bl);var t0=performance.now();var r=await Capture.process(bm);
+   if(r.id!=='a_shark')throw new Error('זוהה '+r.id);return{info:'כריש זוהה תוך '+Math.round(performance.now()-t0)+' מ"ש'};});
+ await T('צליל (Web Audio)',async function(){var A=window.AudioContext||window.webkitAudioContext;if(!A)throw new Error('אין Web Audio');var a=new A();var s=a.state;a.close();return{info:'מצב: '+s};});
+ await T('מצלמה',async function(){if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)return{warn:'אין גישה ישירה למצלמה (עדיין אפשר לצלם דרך כפתור הצילום בדף הסריקה)'};var s=await navigator.mediaDevices.getUserMedia({video:true});s.getTracks().forEach(function(t){t.stop()});return{info:'המצלמה נפתחת'};});
+ await T('גופנים ו-Canvas',async function(){var c=document.createElement('canvas').getContext('2d');if(!c)throw new Error('אין Canvas');await document.fonts.ready;return{info:'ok'};});
+ await T('נעילת מסך (Wake Lock)',async function(){if(!navigator.wakeLock)return{warn:'לא נתמך, המסך עלול להידלק/להיכבות לבד'};return{info:'נתמך'};});
+ var bad=res.filter(function(x){return x[0]==='b'}).length,warn=res.filter(function(x){return x[0]==='w'}).length;
+ sum.textContent=bad?('נמצאו '+bad+' בעיות'):warn?('הכול עובד ('+warn+' הערות)'):'הכול עובד';
+ document.getElementById('raw').textContent=navigator.userAgent+'\n'+res.join('\n');
+};
+})();
+</script></body></html>

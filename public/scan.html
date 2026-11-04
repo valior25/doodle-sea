@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f6fb0">
+<title>מצלמים חיה · ים של ציורים</title>
+<link rel="stylesheet" href="/ui.css">
+<style>
+  body{min-height:100vh;padding-bottom:92px;background:linear-gradient(180deg,#0b5a99 0,#2aa9d6 230px,#eaf7ff 231px) no-repeat}
+  header{padding:calc(20px + env(safe-area-inset-top)) 18px 76px;color:#fff;text-align:center;position:relative;overflow:hidden}
+  header h1{margin:0;font-size:1.7rem;display:flex;gap:10px;justify-content:center;align-items:center}
+  header p{margin:4px 0 0;opacity:.95;font-size:.98rem}
+  header::after{content:"";position:absolute;left:-10%;right:-10%;bottom:-1px;height:44px;background:radial-gradient(60px 22px at 30px 44px,#eaf7ff 98%,transparent) repeat-x;background-size:90px 44px;opacity:.0}
+  main{max-width:520px;margin:-52px auto 0;padding:0 14px 40px;position:relative}
+  .card{background:#fff;border-radius:26px;padding:18px;box-shadow:0 14px 34px rgba(7,58,109,.18);margin-bottom:14px}
+  .tab{display:none}.tab.on{display:block;animation:in .3s ease}
+  @keyframes in{from{opacity:0;transform:translateY(8px)}}
+  nav{position:fixed;bottom:0;inset-inline:0;background:rgba(255,255,255,.96);display:flex;box-shadow:0 -6px 24px rgba(7,58,109,.15);padding-bottom:env(safe-area-inset-bottom);z-index:10}
+  nav button{flex:1;border:0;background:none;font:inherit;padding:10px 4px 9px;color:#6b8aa6;font-weight:500;cursor:pointer;display:grid;justify-items:center;gap:2px;font-size:.88rem}
+  nav button.on{color:var(--sea);font-weight:700}
+  nav button.on .ic{transform:translateY(-2px) scale(1.1)}
+  nav .ic{transition:transform .2s}
+  .steps{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:10px}
+  .steps li{display:flex;gap:12px;align-items:center;background:#f2faff;border-radius:16px;padding:10px 12px}
+  .steps .si{flex:none;width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(160deg,#46c0ee,#1488c8);color:#fff}
+  .row{display:grid;gap:10px}
+  .btn .ic{flex:none}
+  #preview{display:none}
+  #pv{width:100%;border-radius:20px;display:block;aspect-ratio:4/3;background:#1368a8}
+  .slider{display:flex;align-items:center;gap:10px;margin:14px 0 6px;font-weight:500}
+  .slider input{flex:1;accent-color:#1488c8;height:28px}
+  .msg{border-radius:16px;padding:12px 14px;margin:10px 0 0}
+  .err{background:#fff0ee;border:1px solid #ffc3b8;color:#7a2112}
+  .ok{background:#e8fbef;border:1px solid #a6e6bd;color:#115a2c}
+  .tips{font-size:.93rem;color:#4b6a85;margin:10px 0 0;padding-inline-start:20px}
+  .spin{display:none;text-align:center;padding:26px 0;font-weight:700}
+  .spin::before{content:"";display:block;width:46px;height:46px;margin:0 auto 12px;border-radius:50%;border:5px solid #cfe8f6;border-top-color:#1488c8;animation:s 1s linear infinite}
+  @keyframes s{to{transform:rotate(360deg)}}
+  .done{display:none;text-align:center}
+  .done .pic{width:70%;margin:0 auto 10px;aspect-ratio:4/3;border-radius:22px;background:linear-gradient(180deg,#46cdea,#1368a8);display:grid;place-items:center;padding:12px;animation:pop .6s cubic-bezier(.2,1.4,.4,1)}
+  .done .pic img{max-width:100%;max-height:100%;object-fit:contain}
+  .done h2{margin:6px 0 2px;font-size:1.35rem}
+  @keyframes pop{from{transform:scale(.5);opacity:0}}
+  .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+  .g{position:relative;border:0;border-radius:18px;background:linear-gradient(180deg,#46cdea,#1368a8);padding:10px;aspect-ratio:1;display:grid;place-items:center;font:inherit;color:#fff;cursor:pointer}
+  .g{overflow:hidden;min-width:0}.g img{width:100%;height:100%;object-fit:contain}
+  .g b{position:absolute;bottom:4px;inset-inline:0;font-size:.75rem;font-weight:500;text-shadow:0 1px 4px rgba(0,30,70,.8)}
+  .hint{color:#4b6a85;text-align:center;margin:8px 0 0;font-size:.95rem}
+  input[type=file]{display:none}
+  #sheet{position:fixed;inset:0;z-index:30;background:rgba(7,40,80,.5);display:none;align-items:flex-end;justify-content:center}
+  #sheet.on{display:flex}
+  #sheet .box{width:min(520px,100%);background:#fff;border-radius:28px 28px 0 0;padding:16px 18px calc(18px + env(safe-area-inset-bottom));animation:up .3s cubic-bezier(.2,.9,.25,1)}
+  @keyframes up{from{transform:translateY(60%);opacity:.4}}
+  #sheet .pic{border-radius:20px;background:linear-gradient(180deg,#46cdea,#1368a8);aspect-ratio:16/10;display:grid;place-items:center;padding:10px}
+  #sheet .pic{overflow:hidden}#sheet .pic img{width:100%;height:100%;object-fit:contain}
+  .nmL{display:block;margin:14px 0 6px;font-weight:600;color:var(--ink);font-size:1rem}
+  .nmI{width:100%;padding:.65em .9em;border-radius:16px;border:2px solid var(--line);font:inherit;font-size:1.15rem;text-align:center;color:var(--ink);background:#fff}
+  .nmI:focus{outline:none;border-color:#1488c8}
+  #sheet input.nm{width:100%;margin:12px 0 2px;padding:.65em .9em;border-radius:16px;border:2px solid var(--line);font:inherit;font-size:1.15rem;text-align:center;color:var(--ink)}
+  #sheet .meta{text-align:center;color:#6b8aa6;font-size:.9rem;margin-bottom:12px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .btn.sm{font-size:.98rem;padding:.8em 1em}
+  .hold{position:relative;overflow:hidden;background:#fff0ee;color:#a2301b;box-shadow:0 0 0 2px #ffc3b8}
+  .hold i{position:absolute;inset:0;background:#ff9d8a;transform:scaleX(0);transform-origin:right;pointer-events:none}
+  .hold span{position:relative;display:inline-flex;gap:.4em;align-items:center}
+  #undo{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:40;background:#0b2a4a;color:#fff;border-radius:99px;padding:.5em .6em .5em 1.1em;display:flex;gap:12px;align-items:center;transition:.3s;white-space:nowrap}
+  #undo.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+  #undo button{border:0;border-radius:99px;background:#ffc94a;color:#4a2300;font:inherit;font-weight:700;padding:.5em 1em}
+  #toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:50;background:#7a2112;color:#fff;border-radius:16px;padding:.7em 1.1em;max-width:90vw;text-align:center;transition:.3s}#toast.show{opacity:1;transform:translate(-50%,0)}
+  #off{display:none;background:#fff4d6;color:#6a4a00;text-align:center;padding:8px;font-size:.92rem}
+  button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #ff9d00;outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="off">אין חיבור לאקווריום. בדקו שהטלפון על אותה רשת Wi-Fi.</div>
+<header><h1><span data-ic="fish" data-sz="30"></span>מצלמים חיה</h1><p>החיה שצבעתם תעלה למסך הגדול</p></header>
+<main>
+  <section class="tab on" id="t-scan">
+    <div class="card" id="intro">
+      <ul class="steps">
+        <li><span class="si" data-ic="crayon" data-sz="24"></span><span>הדפיסו דף צביעה וצבעו אותו <a href="/print" style="color:var(--sea);font-weight:700">(לדפים)</a></span></li>
+        <li><span class="si" data-ic="camera" data-sz="24"></span><span>צלמו את <b>כל הדף</b>. ארבעת הריבועים השחורים בפינות חייבים להיכנס לתמונה</span></li>
+        <li><span class="si" data-ic="star" data-sz="24"></span><span>שלחו, והיא תיכנס למים!</span></li>
+      </ul>
+      <div class="row">
+        <button class="btn big" id="cam"></button>
+        <button class="btn ghost" id="gal"></button>
+      </div>
+      <ul class="tips"><li>אור טוב, בלי צל של הטלפון על הדף</li><li>לצלם ישר מלמעלה, אפשר גם קצת באלכסון</li></ul>
+    </div>
+    <div class="card spin" id="spin">קוראים את הציור...</div>
+    <div class="card" id="preview">
+      <canvas id="pv" width="800" height="600"></canvas>
+      <div class="slider"><span data-ic="crayon" data-sz="22"></span><input type="range" id="boost" min="0" max="100" value="50" aria-label="צבעים חיים"><span>חיים יותר</span></div>
+      <label class="nmL" for="fname">איך נקרא לה?</label>
+      <input id="fname" class="nmI" maxlength="12" autocomplete="off" enterkeyhint="done" placeholder="שם לחיה (לא חובה)">
+      <div class="row" style="margin-top:12px">
+        <button class="btn big blue" id="send"></button>
+        <button class="btn ghost" id="again">צלמו שוב</button>
+      </div>
+    </div>
+    <div class="card done" id="done">
+      <div class="pic"><img id="doneImg" alt=""></div>
+      <h2 id="doneT">החיה שלכם בדרך!</h2>
+      <p class="hint" style="margin-top:0">תסתכלו על המסך הגדול</p>
+      <div class="row" style="margin-top:12px"><button class="btn big blue" id="doneFind"></button><button class="btn ghost" id="doneMore">סורקים עוד אחד</button></div>
+    </div>
+    <div id="note" role="status"></div>
+    <input type="file" id="fCam" accept="image/*" capture="environment">
+    <input type="file" id="fGal" accept="image/*">
+  </section>
+
+  <section class="tab" id="t-feed">
+    <div class="card">
+      <button class="btn big" id="feed"></button>
+      <p class="hint">החיות יתקרבו לאוכל על המסך</p>
+      <div class="row" style="margin-top:14px"><button class="btn big blue" id="wave"></button></div>
+    </div>
+  </section>
+
+  <section class="tab" id="t-fish">
+    <div class="card"><div class="gallery" id="gallery"></div><p class="hint" id="gempty">עוד אין חיות בים. צלמו את הראשונה!</p></div>
+  </section>
+</main>
+<div id="sheet" role="dialog" aria-modal="true"></div>
+<div id="toast" role="alert"></div>
+<div id="undo" role="status"><span id="undoMsg"></span><button id="undoBtn">ביטול</button></div>
+<nav>
+  <button data-t="scan" class="on"></button>
+  <button data-t="feed"></button>
+  <button data-t="fish"></button>
+</nav>
+<script src="/creatures.js"></script>
+<script src="/icons.js"></script>
+<script src="/reef.js"></script>
+<script src="/capture.js"></script>
+<script src="/scan.js"></script>
+</body>
+</html>

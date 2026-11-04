@@ -1,0 +1,7 @@
+data/
+node_modules/
+.DS_Store
+_to_delete/
+# Local-only background music: never commit audio files (copyright)
+public/audio/*
+!public/audio/README.txt

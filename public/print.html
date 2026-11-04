@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>דפי צביעה · ים של ציורים</title>
+<link rel="stylesheet" href="/ui.css">
+<style>.btn .ic{flex:none}.tick .ic{display:none}.item.on .tick .ic{display:block}.bar .warn{color:#a2301b;font-weight:500;display:none}.bar.bad .warn{display:block}</style>
+<style>
+  .top{background:linear-gradient(160deg,#0f6fb0,#2aa9d6);color:#fff;padding:28px 20px 40px;text-align:center}
+  .top h1{margin:0 0 6px;font-size:clamp(26px,5vw,42px)}
+  .top p{margin:0;opacity:.95;max-width:640px;margin-inline:auto}
+  .wrap{max-width:1100px;margin:-22px auto 40px;padding:0 16px}
+  .bar{background:#fff;border-radius:22px;padding:14px 16px;box-shadow:0 10px 30px rgba(7,58,109,.15);display:flex;gap:12px;align-items:center;flex-wrap:wrap;position:sticky;top:8px;z-index:5}
+  .bar .grow{flex:1;min-width:180px;font-weight:500}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px;margin-top:20px}
+  .item{background:#fff;border-radius:22px;padding:12px;box-shadow:0 6px 20px rgba(7,58,109,.10);border:3px solid transparent;cursor:pointer;position:relative;text-align:center;user-select:none}
+  .item.on{border-color:#2aa9d6;background:#eef9ff}
+  .item>svg{width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:10px;display:block}
+  .item b{display:block;margin-top:8px;font-size:1.1rem}
+  .tick{z-index:2;position:absolute;top:10px;inset-inline-start:10px;width:30px;height:30px;border-radius:50%;background:#fff;border:2px solid var(--line);display:grid;place-items:center;font-weight:700;color:#fff}
+  .item.on .tick{background:#2aa9d6;border-color:#2aa9d6}
+  .tips{margin-top:22px;background:#fff7e0;border-radius:18px;padding:14px 18px;border:1px solid #ffe08a}
+  .tips li{margin:.25em 0}
+  #sheets{display:none}
+  @page{size:A4 landscape;margin:0}
+  @media print{
+    body{background:#fff}.top,.wrap{display:none}
+    #sheets{display:block}
+    .sheet{width:297mm;height:210mm;page-break-after:always;break-after:page;overflow:hidden}
+    .sheet svg{width:297mm;height:210mm;display:block}
+  }
+</style>
+</head>
+<body>
+<div class="top"><h1>דפי צביעה</h1><p>בחרו את החיות שרוצים, הדפיסו על דף A4 (בלי "התאמה לעמוד"), וצבעו בצבעי עט, טוש או עיפרון.</p></div>
+<div class="wrap">
+  <div class="bar">
+    <div class="grow"><span id="count">בחרו חיות להדפסה</span><div class="warn" id="warn">בחרו קודם לפחות חיה אחת</div></div>
+    <button class="btn ghost" id="all">בחרו הכול</button>
+    <button class="btn blue" id="print"></button>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="tips"><b>כדי שהסריקה תצליח:</b>
+    <ul><li>בבקשה לא לצבוע את ארבעת הריבועים השחורים בפינות.</li>
+    <li>להדפיס בגודל מלא (100%) על דף A4 לרוחב.</li>
+    <li>אפשר לצבוע גם מעבר לקו - רק מה שבתוך החיה יעבור לאקווריום.</li></ul></div>
+</div>
+<div id="sheets"></div>
+<script src="/creatures.js"></script>
+<script src="/icons.js"></script>
+<script src="/sheet.js?v=5"></script>
+<script>
+  var bar = document.querySelector('.bar'), sel = {}, grid = document.getElementById('grid'), cnt = document.getElementById('count');
+  var q = new URLSearchParams(location.search);
+  Creatures.list.filter(function (c) { return !c.hidden; }).forEach(function (c) {
+    var d = document.createElement('div'); d.className = 'item'; d.dataset.id = c.id;
+    d.innerHTML = '<div class="tick">' + Icons.svg('check', 18) + '</div>' + SheetArt.svg(c, { preview: true }) + '<b>' + c.he + '</b>';
+    d.onclick = function () { sel[c.id] = !sel[c.id]; d.classList.toggle('on', !!sel[c.id]); update(); };
+    grid.appendChild(d);
+  });
+  document.getElementById('print').innerHTML = Icons.svg('print', 22) + 'הדפסה';
+  function update() { bar.classList.remove('bad'); var n = Object.keys(sel).filter(function (k) { return sel[k]; }).length; cnt.textContent = n ? 'נבחרו ' + n + (n === 1 ? ' דף' : ' דפים') : 'בחרו חיות להדפסה'; }
+  document.getElementById('all').onclick = function () {
+    var shown = Creatures.list.filter(function (c) { return !c.hidden; });
+    var every = shown.every(function (c) { return sel[c.id]; });
+    shown.forEach(function (c) { sel[c.id] = !every; });
+    [].forEach.call(grid.children, function (e) { e.classList.toggle('on', !every); }); update();
+  };
+  document.getElementById('print').onclick = function () {
+    var ids = Creatures.list.filter(function (c) { return sel[c.id]; });
+    if (!ids.length) { bar.classList.add('bad'); return; }
+    document.getElementById('sheets').innerHTML = ids.map(function (c) { return '<div class="sheet">' + SheetArt.svg(c, {}) + '</div>'; }).join('');
+    (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(function () { setTimeout(function () { window.print(); }, 150); });
+  };
+  (q.get('sel') || '').split(',').forEach(function (id) { var e = grid.querySelector('[data-id="' + id + '"]'); if (e) { sel[id] = true; e.classList.add('on'); } });
+  var pre = q.get('id'); if (pre) { document.getElementById('sheets').innerHTML = '<div class="sheet">' + SheetArt.svg(Creatures.byId(pre), {}) + '</div>'; document.body.classList.add('single'); }
+  update();
+</script>
+</body>
+</html>
