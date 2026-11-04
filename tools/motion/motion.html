@@ -85,7 +85,7 @@ function draw(t){
  ti.style.opacity=(1-tout)*(tin);ti.firstChild.style.transform='scale('+(0.88+.12*ob(seg(t,0,.8)))+') translateY('+(-60*ease(tout))+'px)';
  // steps bar
  var cur=t<1.6?-1:t<3.4?0:t<5.2?1:t<7.0?2:3;
- stEl.style.opacity=eo(seg(t,1.4,1.8))*(1-ease(seg(t,9.65,10)));
+ stEl.style.opacity=eo(seg(t,1.4,1.8))*(1-ease(seg(t,12.65,13)));
  [].forEach.call(stEl.children,function(d,i){var on=i===cur,done=i<cur;d.style.background=on?'linear-gradient(#ffd98a,#ffab4d)':done?'#2ecc8f33':'#ffffff14';d.style.color=on?'#5a3000':done?'#bff0dc':'#9cc7e6';d.style.transform='scale('+(on?1.08:1)+')'});
  var lab=document.getElementById('lab');
  var L=(t>=3.6&&t<5.2)?'מותר לצאת מהקווים':'';lab.textContent=L;lab.style.opacity=L?1:0;
@@ -119,24 +119,24 @@ function draw(t){
  var cs=seg(t,6.55,6.9);chk.style.display=(t>6.6&&t<7.3)?'grid':'none';put(chk,690,170,ob(cs)*(1-seg(t,7.0,7.3)),0);
  // TV
  var tvA=ease(seg(t,7.1,7.75));tv.style.display=t>7.08?'block':'none';
- put(tv,480,285+ (1-tvA)*40,.78+.22*tvA,0,tvA*(1-ease(seg(t,9.65,10))));
+ put(tv,480,285+ (1-tvA)*40,.78+.22*tvA,0,tvA*(1-ease(seg(t,12.65,13))));
  // creatures in tv (inner 682x376)
  var bornW=7.85;
- var CR=[{id:'a_whale',t0:bornW,sc:.15,x:function(u){return 372-u*34},y:function(u){return 120+Math.sin(u*2)*12},nm:'מובי'},
-         {id:'a_turtle',t0:bornW+.5,sc:.09,x:function(u){return -170+u*165},y:function(u){return 200+Math.sin(u*1.7+1)*10},nm:'פנינה'},
-         {id:'tang',t0:bornW+.9,sc:.085,x:function(u){return 700-u*230},y:function(u){return 50+Math.sin(u*2.4+2)*8},nm:'גלי'}];
+ var CR=[{id:'a_whale',t0:bornW,sc:.15,x:function(u){return 372-u*34},y:function(u){return 100+Math.sin(u*2)*6},nm:'מובי'},
+         {id:'a_turtle',t0:bornW+.5,sc:.09,x:function(u){return -170+u*165},y:function(u){return 213+Math.sin(u*1.7+1)*5},nm:'פנינה'},
+         {id:'tang',t0:bornW+.9,sc:.085,x:function(u){return 700-u*165},y:function(u){return 40+Math.sin(u*2.4+2)*5},nm:'גלי'}];
  tvCr.forEach(function(d,i){var c=CR[i],u=t-c.t0,show=u>0;d.style.display=show?'block':'none';if(!show)return;
-  var s=SH[c.id],w=s.w*c.sc,e=i===0?ob(seg(t,c.t0,c.t0+.55)):eo(seg(t,c.t0,c.t0+.5));
+  var u0=u;u=Math.min(u,2);var hb=eo(seg(t,c.t0+2,c.t0+3.4)),HM=[60,380,470][i],dr=Math.sin(u0*1.1+i*2)*14*hb;var s=SH[c.id],w=s.w*c.sc,e=i===0?ob(seg(t,c.t0,c.t0+.55)):eo(seg(t,c.t0,c.t0+.5));
   d.firstChild.style.width=w+'px';
   var sk=Math.sin(u*5)*3;
-  d.style.transform='translate('+c.x(u)+'px,'+c.y(u)+'px) scale('+(i===0?e:1)+') skewY('+sk+'deg)';d.style.opacity=i===0?Math.min(1,e*1.5):e;
-  var tg=tags[i];tg.style.display=u>.45?'block':'none';tg.style.transform='translate('+(c.x(u)+w/2-28)+'px,'+(c.y(u)-30)+'px) scale('+ob(seg(t,c.t0+.45,c.t0+.85))+')';
+  d.style.transform='translate('+(c.x(u)*(1-hb)+HM*hb+dr)+'px,'+c.y(u)+'px) scale('+(i===0?e:1)+') skewY('+sk+'deg)';d.style.opacity=i===0?Math.min(1,e*1.5):e;
+  var tg=tags[i];tg.style.display=u>.45?'block':'none';tg.style.transform='translate('+((c.x(u)*(1-hb)+HM*hb+dr)+w/2-28)+'px,'+(c.y(u)-30)+'px) scale('+ob(seg(t,c.t0+.45,c.t0+.85))+')';
  });
  [].forEach.call(tv.querySelectorAll('.weed'),function(w,i){w.style.transform='rotate('+(Math.sin(t*1.6+i)*6)+'deg)'});
  // pop ring
  var rp=seg(t,bornW-.05,bornW+.6);ring.style.opacity=rp>0&&rp<1?(1-rp):0;var rr=40+240*eo(rp);ring.style.width=rr+'px';ring.style.height=rr+'px';ring.style.left=(515-rr/2)+'px';ring.style.top=(205-rr/2)+'px';
  // end tagline
- var en=document.getElementById('end');en.innerHTML='הדף הבא כבר מחכה.<div style="font-size:21px;font-weight:500;opacity:.8;margin-top:6px">קוד פתוח · ברשת הביתית · בלי הרשמה · בלי ענן · בחינם</div>';en.style.opacity=eo(seg(t,9.0,9.4))*(1-ease(seg(t,9.7,10)));en.style.transform='translateY('+(14*(1-eo(seg(t,9.0,9.5))))+'px)';
+ var en=document.getElementById('end');en.innerHTML='הדף הבא כבר מחכה.<div style="font-size:21px;font-weight:500;opacity:.8;margin-top:6px">קוד פתוח · ברשת הביתית · בלי הרשמה · בלי ענן · בחינם</div>';en.style.opacity=eo(seg(t,9.0,9.4))*(1-ease(seg(t,12.65,13)));en.style.transform='translateY('+(14*(1-eo(seg(t,9.0,9.5))))+'px)';
  if(t>8.8){tv.style.transform+=' translateY('+(-34*eo(seg(t,8.9,9.5)))+'px)'}
 }
 window.draw=draw;draw(0);
