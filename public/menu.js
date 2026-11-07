@@ -209,7 +209,7 @@
     $('#mEmpty').style.display = shown.length ? 'none' : ''; $('#mCount').textContent = shown.length ? '(' + shown.length + ')' : '';
     shown.slice().reverse().forEach(function (f) {
       var cr = C.byId(f.kind), b = document.createElement('button'); b.className = 'g' + (seen && !seen[f.id] ? ' fresh' : '');
-      b.innerHTML = '<img src="/fish/' + R.esc(f.id) + '.png" alt="">' + '<b>' + R.esc(f.name || (cr && cr.he) || '') + '</b>';
+      b.innerHTML = '<img src="' + R.esc(R.fishUrl(f.id)) + '" alt="">' + '<b>' + R.esc(f.name || (cr && cr.he) || '') + '</b>';
       b.setAttribute('aria-label', R.esc(f.name || (cr && cr.he) || 'חיה'));
       b.onclick = function () { openSheet(f, cr); };
       g.appendChild(b);
@@ -223,7 +223,7 @@
   var cur = null, holdT = 0, holdRaf = 0;
   function openSheet(f, cr) {
     cur = f;
-    sheet.innerHTML = '<div class="box"><div class="pic"><img src="/fish/' + R.esc(f.id) + '.png" alt=""></div>' +
+    sheet.innerHTML = '<div class="box"><div class="pic"><img src="' + R.esc(R.fishUrl(f.id)) + '" alt=""></div>' +
       '<input class="nm" id="shName" maxlength="12" aria-label="שם החיה" value="' + R.esc(f.name || '') + '">' +
       '<div class="meta">' + R.esc(cr ? cr.he : '') + ' · הצטרף ב-' + R.esc(R.date(f.t)) + '</div>' +
       '<div class="mrow"><button class="mbtn alt" id="shFind">' + I.svg('target', 20) + 'איפה הוא?</button><button class="mbtn" id="shJump">' + I.svg('jump', 20) + 'קפיצה</button></div>' +
@@ -268,8 +268,9 @@
   // ── QR for the phone ──────────────────────────────────────────────────────
   fetch('/api/info').then(function (r) { return r.json(); }).then(function (info) {
     var isLocal = /^(localhost|127\.|\[::1\])/.test(location.hostname), base = isLocal && info.urls.length ? info.urls[0] : location.origin, url = base + '/scan';
+    if (R.joinInfo) url = R.joinInfo.url;
     if (window.qrcode) { var qr = qrcode(0, 'M'); qr.addData(url); qr.make(); $('#mQr').innerHTML = qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true }); }
-    $('#mUrl').innerHTML = (isLocal && info.urls.length ? info.urls : [location.origin]).map(function (u) { return R.esc(u.replace('http://', '')) + '/scan'; }).join('<br>');
+    $('#mUrl').innerHTML = R.joinInfo ? R.esc(R.joinInfo.label) : (isLocal && info.urls.length ? info.urls : [location.origin]).map(function (u) { return R.esc(u.replace('http://', '')) + '/scan'; }).join('<br>');
   }).catch(function () {});
 
   // ── keys ──────────────────────────────────────────────────────────────────

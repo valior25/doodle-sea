@@ -10,11 +10,13 @@
       return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) { var e = new Error(j.error || ('שגיאה ' + r.status)); e.status = r.status; throw e; } return j; });
     });
   };
+  R.fishUrl = function (id) { return '/fish/' + id + '.png'; };          // the static build swaps this for in-memory URLs
+  R.joinInfo = null;                                                       // static build: { url, label } for the phone QR
   R.friendly = function (e) {
     if (!e) return 'משהו השתבש. נסו שוב.';
     if (e.status === 429) return 'רגע, לאט לאט. נסו שוב עוד כמה שניות.';
     if (e.status === 403 || e.status === 415) return 'הבקשה נדחתה. פתחו את הדף מהאקווריום עצמו.';
-    if (/Failed to fetch|NetworkError|Load failed/i.test(e.message || '')) return 'אין חיבור לאקווריום. בדקו שהטלפון על אותה רשת Wi-Fi.';
+    if (/Failed to fetch|NetworkError|Load failed/i.test(e.message || '')) return window.REEF_MODE === 'static' ? 'אין חיבור לטלוויזיה. סרקו שוב את הקוד שעל המסך.' : 'אין חיבור לאקווריום. בדקו שהטלפון על אותה רשת Wi-Fi.';
     return 'משהו השתבש. נסו שוב.';
   };
   R.date = function (t) { try { return new Date(t).toLocaleDateString('he-IL', { day: 'numeric', month: 'long' }); } catch (e) { return ''; } };

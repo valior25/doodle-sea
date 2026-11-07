@@ -90,7 +90,7 @@
     $('gempty').style.display = shown.length ? 'none' : '';
     shown.slice().reverse().forEach(function (f) {
       var cr = C.byId(f.kind), b = document.createElement('button'); b.className = 'g';
-      b.innerHTML = '<img src="/fish/' + R.esc(f.id) + '.png" alt=""><b>' + R.esc(f.name || (cr && cr.he) || '') + '</b>';
+      b.innerHTML = '<img src="' + R.esc(R.fishUrl(f.id)) + '" alt=""><b>' + R.esc(f.name || (cr && cr.he) || '') + '</b>';
       b.onclick = function () { openSheet(f, cr); };
       g.appendChild(b);
     });
@@ -102,7 +102,7 @@
   function closeSheet() { sheet.classList.remove('on'); sheet.innerHTML = ''; }
   sheet.addEventListener('click', function (e) { if (e.target === sheet) { var n = $('shName'); if (n) n.blur(); closeSheet(); } });
   function openSheet(f, cr) {
-    sheet.innerHTML = '<div class="box"><div class="pic"><img src="/fish/' + R.esc(f.id) + '.png" alt=""></div>' +
+    sheet.innerHTML = '<div class="box"><div class="pic"><img src="' + R.esc(R.fishUrl(f.id)) + '" alt=""></div>' +
       '<input class="nm" id="shName" maxlength="12" aria-label="שם החיה" value="' + R.esc(f.name || '') + '">' +
       '<div class="meta">' + R.esc(cr ? cr.he : '') + ' · הצטרף ב-' + R.esc(R.date(f.t)) + '</div>' +
       '<div class="grid2"><button class="btn blue sm" id="shFind">' + I.svg('target', 22) + 'איפה הוא?</button><button class="btn sm" id="shJump">' + I.svg('jump', 22) + 'קפיצה</button></div>' +

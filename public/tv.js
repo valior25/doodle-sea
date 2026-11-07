@@ -723,7 +723,7 @@
   function addFish(rec, fresh) {
     if (byId[rec.id]) return Promise.resolve();
     byId[rec.id] = true;
-    return loadImage('/fish/' + rec.id + '.png').then(function (img) {
+    return loadImage(Reef.fishUrl(rec.id)).then(function (img) {
       if (!byId[rec.id]) return;                                  // removed while its picture was loading
       var cr = C.byId(rec.kind), f = new Fish(rec, prepSprite(straighten(img, rec.kind), cr && cr.faceLeft));
       fishes.push(f); realCount = countReal();
@@ -807,9 +807,10 @@
   function setupQR() {
     fetch('/api/info').then(function (r) { return r.json(); }).then(function (info) {
       var here = location.origin, isLocal = /^(localhost|127\.|\[::1\])/.test(location.hostname), base = isLocal && info.urls.length ? info.urls[0] : here, url = base + '/scan';
+      if (Reef.joinInfo) url = Reef.joinInfo.url;
       var qr = qrcode(0, 'M'); qr.addData(url); qr.make(); var svg = qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
       document.getElementById('qrBig').innerHTML = svg; document.getElementById('qrSmall').innerHTML = svg;
-      var all = (isLocal && info.urls.length ? info.urls : [here]).map(function (u) { return u.replace('http://', '') + '/scan'; });
+      var all = Reef.joinInfo ? [Reef.joinInfo.label] : (isLocal && info.urls.length ? info.urls : [here]).map(function (u) { return u.replace('http://', '') + '/scan'; });
       document.getElementById('urlBig').innerHTML = all.join('<br>'); document.getElementById('urlSmall').innerHTML = all.join('<br>');
     }).catch(function () {});
   }
